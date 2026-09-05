@@ -245,6 +245,10 @@ Add to your pi configuration for automatic loading:
 - OpenAI-compatible endpoint: `https://model.inferx.net/endpoints/v1`
 - Models endpoint: `https://model.inferx.net/endpoints/v1/models` (tenant key required)
 
+## Credits
+
+Built on the provider-extension work of [monotykamary](https://github.com/monotykamary) - this package adapts their provider extension pattern for the InferX gateway.
+
 ## License
 
 MIT

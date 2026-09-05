@@ -1,8 +1,9 @@
 # AGENTS.md
 
 Provider extension that registers **InferX** (`model.inferx.net`) as an `openai-completions`
-provider. It follows the same contract as `pi-crofai-provider`, `pi-lilac-provider` and
-`pi-neuralwatt-provider`; when in doubt, match those.
+provider. The contract below is self-contained: every capability and override is derived
+from evidence read directly off InferX's own catalog, published specs and live probes —
+never from another provider extension.
 
 ## DO NOT EDIT — Auto-generated Files
 
@@ -50,13 +51,14 @@ whole provider registration.
 Applied in this order; every value must trace to evidence, never to a model name's vibe.
 
 1. **Reasoning** — the endpoint's published Model Spec contains `--reasoning-parser` → true;
-   a Spec without it → false; no Spec published (the four shared endpoints) → inherit the
-   sibling provider's E2E verdict for the same upstream weights.
-2. **Vision** — Spec `apiType: "image2text"`, a published vision export, a live image probe
-   that answers, or a majority of sibling provider E2E catalogs that report image input.
-   A single contradicting sibling is not enough to hold it back once the weight of evidence
-   or a live probe supports it. Ends without evidence → **text**: a false negative hides a
-   feature, a false positive makes pi send images the build rejects.
+   a Spec without it → false; no Spec published or a bare listing → a live response probe:
+   a completion returning a `reasoning_content` field (or equivalent reasoning payload)
+   marks it reasoning, otherwise it stays text.
+2. **Vision** — Spec `apiType: "image2text"`, a published vision export, or a live image
+   probe that answers the image with a coherent caption. A single contradicting probe result
+   is not enough to hold it back once a live probe answers correctly. Ends without evidence →
+   **text**: a false negative hides a feature, a false positive makes pi send images the build
+   rejects.
 3. **Thinking levels** — vLLM parsers accept a parser-owned vocabulary (`none|low|medium|high`,
    `max` on some builds). Map **all seven** pi levels; `null` means "never send this".
    Leaving a level unmapped makes pi send its own name (`minimal`, `xhigh`) and the endpoint 400s.
@@ -69,7 +71,7 @@ Applied in this order; every value must trace to evidence, never to a model name
 5. **Pricing** — billed (post-tenant-discount) $/1M, list prices kept in the README
    `## Pricing` audit table.
 6. **Lengths** — published context from the catalog; `maxTokens = min(contextWindow, 131072)`
-   unless a sibling verified a tighter completion cap (gemma → 16384).
+   unless a live probe verified a tighter completion cap (gemma → 16384).
 7. **Ids** — always the exact case-sensitive slug from the catalog `href`. `data-search` is
    lowercased and would corrupt `Agents-A1`, `Qwen3.8-27B-FP8`, `gemma-4-31B-it-fp8`, …
 
@@ -101,8 +103,8 @@ Probed live; each claim is reproducible with `curl`:
 
 ### Capability gaps to leave alone
 
-- **No credits/balance status bar** (unlike `pi-crofai-provider`): there is no key-authenticated
-  usage endpoint to read. Adding one means inventing a route — do not.
+- **No credits/balance status bar**: there is no key-authenticated usage endpoint to read.
+  Adding one means inventing a route — do not.
 - **`INFERX_BASE_URL` is read in `index.ts`, not via `$INFERX_BASE_URL`**: pi interpolates
   config-value references for `apiKey` and headers only; `baseUrl` is passed verbatim.
 
