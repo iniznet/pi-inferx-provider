@@ -1,0 +1,192 @@
+{
+  "Agents-A1": {
+    "reasoning": false,
+    "compat": {
+      "maxTokensField": "max_tokens",
+      "supportsDeveloperRole": false,
+      "supportsStore": false
+    }
+  },
+  "Devstral-2-123B-Instruct-2512-int4-AutoRound": {
+    "reasoning": false,
+    "compat": {
+      "maxTokensField": "max_tokens",
+      "supportsDeveloperRole": false,
+      "supportsStore": false
+    }
+  },
+  "Qwen3-Coder-Next-FP8": {
+    "reasoning": false,
+    "compat": {
+      "maxTokensField": "max_tokens",
+      "supportsDeveloperRole": false,
+      "supportsStore": false
+    }
+  },
+  "Qwen3.6-35B-A3B-FP8": {
+    "reasoning": true,
+    "input": [
+      "text",
+      "image"
+    ],
+    "thinkingLevelMap": {
+      "off": "none",
+      "minimal": null,
+      "low": "low",
+      "medium": "medium",
+      "high": "high",
+      "xhigh": null,
+      "max": null
+    },
+    "compat": {
+      "thinkingFormat": "openai",
+      "maxTokensField": "max_tokens",
+      "supportsDeveloperRole": false,
+      "supportsStore": false,
+      "supportsReasoningEffort": true
+    }
+  },
+  "Qwen3.8-27B-FP8": {
+    "reasoning": true,
+    "input": [
+      "text",
+      "image"
+    ],
+    "thinkingLevelMap": {
+      "off": null,
+      "minimal": null,
+      "low": "low",
+      "medium": "medium",
+      "high": null,
+      "xhigh": null,
+      "max": null
+    },
+    "compat": {
+      "thinkingFormat": "openai",
+      "maxTokensField": "max_tokens",
+      "supportsDeveloperRole": false,
+      "supportsStore": false,
+      "supportsReasoningEffort": true
+    }
+  },
+  "deepseek-v4-flash-0731": {
+    "reasoning": true,
+    "thinkingLevelMap": {
+      "off": "none",
+      "minimal": "minimal",
+      "low": "low",
+      "medium": "medium",
+      "high": "high",
+      "xhigh": "xhigh",
+      "max": "max"
+    },
+    "compat": {
+      "thinkingFormat": "openai",
+      "maxTokensField": "max_tokens",
+      "supportsDeveloperRole": false,
+      "supportsStore": false,
+      "supportsReasoningEffort": true
+    }
+  },
+  "deepseek-v4-flash-vision-exp": {
+    "reasoning": true,
+    "input": [
+      "text",
+      "image"
+    ],
+    "thinkingLevelMap": {
+      "off": "none",
+      "minimal": "minimal",
+      "low": "low",
+      "medium": "medium",
+      "high": "high",
+      "xhigh": "xhigh",
+      "max": "max"
+    },
+    "compat": {
+      "thinkingFormat": "openai",
+      "maxTokensField": "max_tokens",
+      "supportsDeveloperRole": false,
+      "supportsStore": false,
+      "supportsReasoningEffort": true
+    }
+  },
+  "gemma-4-31B-it-fp8": {
+    "reasoning": true,
+    "input": [
+      "text",
+      "image"
+    ],
+    "maxTokens": 16384,
+    "thinkingLevelMap": {
+      "off": "none",
+      "minimal": null,
+      "low": "low",
+      "medium": "medium",
+      "high": "high",
+      "xhigh": null,
+      "max": null
+    },
+    "compat": {
+      "thinkingFormat": "openai",
+      "maxTokensField": "max_tokens",
+      "supportsDeveloperRole": false,
+      "supportsStore": false,
+      "supportsReasoningEffort": true
+    }
+  },
+  "glm-5.3-flash": {
+    "reasoning": true,
+    "thinkingLevelMap": {
+      "off": "none",
+      "minimal": "minimal",
+      "low": "low",
+      "medium": "medium",
+      "high": "high",
+      "xhigh": "xhigh",
+      "max": "max"
+    },
+    "compat": {
+      "thinkingFormat": "openai",
+      "maxTokensField": "max_tokens",
+      "supportsDeveloperRole": false,
+      "supportsStore": false,
+      "supportsReasoningEffort": true
+    },
+    "input": [
+      "text",
+      "image"
+    ]
+  },
+  "gpt-oss-20b": {
+    "reasoning": false,
+    "compat": {
+      "maxTokensField": "max_tokens",
+      "supportsDeveloperRole": false,
+      "supportsStore": false
+    }
+  },
+  "qwen38-flash-next": {
+    "reasoning": true,
+    "thinkingLevelMap": {
+      "off": "none",
+      "minimal": null,
+      "low": "low",
+      "medium": "medium",
+      "high": null,
+      "xhigh": "xhigh",
+      "max": null
+    },
+    "compat": {
+      "thinkingFormat": "openai",
+      "maxTokensField": "max_tokens",
+      "supportsDeveloperRole": false,
+      "supportsStore": false,
+      "supportsReasoningEffort": true
+    },
+    "input": [
+      "text",
+      "image"
+    ]
+  }
+}
