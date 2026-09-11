@@ -33,7 +33,7 @@ Access DeepSeek, GLM, Qwen, Gemma, GPT-OSS, Devstral and Agents-A1 endpoints thr
 |-------|---------|--------|-----------|-----------|-----------------|------------|
 | Agents A1 | 262K | ❌ | ❌ | $0.024 | — | $0.18 |
 | Deepseek V4 1 Flash | 262K | ✅ | ❌ | $0.12 | $0.0024 | $0.48 |
-| DeepSeek V4 Flash 0731 | 1.0M | ❌ | ✅ | $0.044 | $0.0014 | $0.088 |
+| DeepSeek V4 Flash 0731 | 1.0M | ❌ | ✅ | $0.077 | $0.00245 | $0.154 |
 | DeepSeek V4 Flash Vision (exp) | 262K | ✅ | ✅ | $0.132 | $0.0042 | $0.396 |
 | Devstral 2 123B Instruct (int4 AutoRound) | 128K | ❌ | ❌ | — | — | — |
 | Gemma 4 31B IT (fp8) | 262K | ✅ | ✅ | **Free** | **Free** | **Free** |
@@ -137,7 +137,7 @@ reflect. The list price is kept here as the audit trail:
 
 | Endpoint | List in / out / cache | Discount | Billed in / out / cache |
 |---|---|---|---|
-| `deepseek-v4-flash-0731` | 0.22 / 0.44 / 0.007 | 80% | **0.044 / 0.088 / 0.0014** |
+| `deepseek-v4-flash-0731` | 0.22 / 0.44 / 0.007 | 65% | **0.077 / 0.154 / 0.00245** |
 | `deepseek-v4-flash-vision-exp` | 0.22 / 0.66 / 0.007 | 40% | **0.132 / 0.396 / 0.0042** |
 | `glm-5.3-flash` | 0.15 / 0.5 / 0.03 | 70% | **0.045 / 0.15 / 0.009** |
 | `qwen38-flash-next` | 0.15 / 0.47 / 0.016 | 100% | **Free** |
