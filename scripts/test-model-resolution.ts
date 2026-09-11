@@ -110,17 +110,23 @@ section("B. shipped catalog integrity (models.json + patch.json)");
 
 const EXPECTED_IDS = [
   "Agents-A1",
-  "Devstral-2-123B-Instruct-2512-int4-AutoRound",
   "Qwen3-Coder-Next-FP8",
   "Qwen3.6-35B-A3B-FP8",
   "Qwen3.8-27B-FP8",
   "deepseek-v4-flash-0731",
-  "deepseek-v4-flash-vision-exp",
+  "deepseek-v4.1-flash",
   "gemma-4-31B-it-fp8",
   "glm-5.3-flash",
   "gpt-oss-20b",
-  "qwen38-flash-next",
 ];
+// Delisted endpoints still inside the 14-day grace window stay registered. Read the
+// shipped graveyard dynamically so this gate survives its natural eviction instead of
+// hardcoding ids that are guaranteed to disappear.
+const shippedDeprecated = JSON.parse(
+  fs.readFileSync(path.join(root, "deprecated-models.json"), "utf8"),
+) as Record<string, JsonModel & { deprecatedAt?: string }>;
+const shippedGraceIds = selectActiveDeprecated(shippedDeprecated).map((m: JsonModel) => m.id);
+const EXPECTED_REGISTERED_IDS = [...EXPECTED_IDS, ...shippedGraceIds];
 const PI_LEVELS = ["off", "minimal", "low", "medium", "high", "xhigh", "max"];
 const VLLM_EFFORTS = ["none", "minimal", "low", "medium", "high", "xhigh", "max"];
 // Per-model accepted effort set, probed live against the InferX gateway (each vLLM
@@ -152,7 +158,7 @@ const EXPECTED_EXPOSED: Record<string, string[]> = {
 const built = buildModels(modelsData, [], patchData);
 const byId = new Map(built.map((m: any) => [m.id, m]));
 
-eq(built.map((m: any) => m.id).sort(), [...EXPECTED_IDS].sort(), "every published endpoint is registered with its exact slug");
+eq(built.map((m: any) => m.id).sort(), [...EXPECTED_REGISTERED_IDS].sort(), "every published endpoint is registered with its exact slug");
 check(built.every((m: any) => m.contextWindow > 0), "no model can trip pi's `invalid contextWindow` guard");
 check(built.every((m: any) => m.maxTokens > 0 && m.maxTokens <= m.contextWindow), "maxTokens is positive and fits inside the window");
 check(built.every((m: any) => [m.cost.input, m.cost.output, m.cost.cacheRead, m.cost.cacheWrite].every((c: number) => Number.isFinite(c) && c >= 0)), "all cost fields are finite and non-negative");
@@ -190,12 +196,12 @@ check(
 );
 eq(
   built.filter((m: any) => m.input.includes("image")).map((m: any) => m.id).sort(),
-  ["Qwen3.6-35B-A3B-FP8", "Qwen3.8-27B-FP8", "deepseek-v4-flash-vision-exp", "glm-5.3-flash", "gemma-4-31B-it-fp8", "qwen38-flash-next"].sort(),
+  ["Qwen3.6-35B-A3B-FP8", "Qwen3.8-27B-FP8", "deepseek-v4.1-flash", "gemma-4-31B-it-fp8", "glm-5.3-flash", ...shippedGraceIds.filter((id: string) => patchData[id]?.input?.includes("image"))].sort(),
   "vision is declared exactly where InferX evidence or a majority of sibling E2E catalogs points",
 );
 eq(
   built.filter((m: any) => m.reasoning).map((m: any) => m.id).sort(),
-  ["Qwen3.6-35B-A3B-FP8", "Qwen3.8-27B-FP8", "deepseek-v4-flash-0731", "deepseek-v4-flash-vision-exp", "gemma-4-31B-it-fp8", "glm-5.3-flash", "qwen38-flash-next"],
+  ["Qwen3.6-35B-A3B-FP8", "Qwen3.8-27B-FP8", "deepseek-v4-flash-0731", "gemma-4-31B-it-fp8", "glm-5.3-flash", ...shippedGraceIds.filter((id: string) => patchData[id]?.reasoning)].sort(),
   "reasoning is declared exactly where a vLLM reasoning parser (or the same upstream weights) is evidenced",
 );
 eq(byId.get("gemma-4-31B-it-fp8")?.maxTokens, 16384, "gemma keeps the sibling-verified 16K completion cap instead of the generic ceiling");
@@ -220,8 +226,8 @@ check(stripped.compat?.maxTokensField === "max_tokens", "the request-shape pins 
 
 const custom: JsonModel = { ...base, id: "x", name: "Custom X", contextWindow: 2000 };
 eq(buildModels([base], [custom], { x: { name: "Patched" } })[0].name, "Patched", "custom replaces base and still receives its patch");
-eq(buildModels([base], [], { ghost: { name: "Ghost" } }).length, 1, "a patch entry for an unknown id adds no model");
-eq(buildModels([base], [], {}).length, 1, "buildModels is stable with an empty patch");
+eq(buildModels([base], [], { ghost: { name: "Ghost" } }).map((m: any) => m.id).sort(), ["x", ...shippedGraceIds].sort(), "a patch entry for an unknown id adds no model (only the shipped grace entries ride along)");
+eq(buildModels([base], [], {}).map((m: any) => m.id).sort(), ["x", ...shippedGraceIds].sort(), "buildModels is stable with an empty patch");
 
 const live: JsonModel = { ...base, name: "Live", contextWindow: 4000, maxTokens: 4000, cost: { input: 9, output: 0, cacheRead: 0, cacheWrite: 0 } };
 const merged = mergeWithEmbedded([live, { ...base, id: "new", name: "New", contextWindow: 10, maxTokens: 10 }], [base, { ...base, id: "only-embedded", name: "Only" }]);
@@ -259,7 +265,7 @@ const freshGraveyard: Record<string, JsonModel & { deprecatedAt?: string }> = {
 };
 eq(withDeprecated([base], now, freshGraveyard).map((m: any) => m.id), ["x", "fresh"], "a delisted endpoint inside the grace window keeps working");
 eq(withDeprecated([base, { ...base, id: "fresh" }], now, freshGraveyard).map((m: any) => m.id), ["x", "fresh"], "a live listing is never duplicated by the graveyard");
-eq(buildModels([base], [], {}).length, 1, "the shipped (empty) graveyard adds no models today");
+eq(buildModels([base], [], {}).length, 1 + shippedGraceIds.length, "the shipped graveyard contributes exactly its active grace entries");
 
 // ─── D. Live /models transforms ───────────────────────────────────────────────
 
@@ -302,7 +308,7 @@ eq(registered.length, 1, "registration happens once, synchronously, at load");
 const first = registered[0];
 eq([first.id, first.config.api, first.config.apiKey, first.config.name], ["inferx", "openai-completions", "$INFERX_API_KEY", "InferX"], "provider identity matches the public integration docs");
 eq(first.config.baseUrl, "https://model.inferx.net/endpoints/v1", "the shared surface is registered");
-eq(first.config.models.length, EXPECTED_IDS.length, "all endpoints are available before any network call");
+eq(first.config.models.length, EXPECTED_REGISTERED_IDS.length, "all endpoints are available before any network call");
 check(first.config.models.every((m: any) => m.contextWindow > 0 && m.maxTokens > 0), "the registered catalog clears pi's validation");
 check(typeof handlers.session_start?.[0] === "function" && typeof handlers.session_shutdown?.[0] === "function", "session_start and session_shutdown handlers are wired");
 
@@ -321,7 +327,7 @@ for (let i = 0; i < 50 && registered.length < 2; i++) await new Promise((r) => s
 
 eq(registered.length, 2, "session_start re-registers once the live catalog lands");
 const swapped = registered[1].config.models;
-eq(swapped.length, EXPECTED_IDS.length + 1, "a new endpoint from the live listing is added without dropping the curated ones");
+eq(swapped.length, EXPECTED_REGISTERED_IDS.length + 1, "a new endpoint from the live listing is added without dropping the curated ones");
 const glm = swapped.find((m: any) => m.id === "glm-5.3-flash");
 eq([glm.cost.input, glm.name, glm.reasoning], [0.02, "GLM 5.3 Flash", true], "live pricing is adopted while curated identity and capability survive");
 check(fs.existsSync(path.join(tmpHome, "cache", "inferx-models.json")), "the refreshed catalog is cached under the isolated agent dir");

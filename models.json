@@ -32,16 +32,16 @@
     "maxTokens": 131072
   },
   {
-    "id": "deepseek-v4-flash-vision-exp",
-    "name": "DeepSeek V4 Flash Vision (exp)",
+    "id": "deepseek-v4.1-flash",
+    "name": "Deepseek V4 1 Flash",
     "reasoning": false,
     "input": [
       "text"
     ],
     "cost": {
-      "input": 0.132,
-      "output": 0.396,
-      "cacheRead": 0.0042,
+      "input": 0.12,
+      "output": 0.48,
+      "cacheRead": 0.0024,
       "cacheWrite": 0
     },
     "contextWindow": 262144,
@@ -78,22 +78,6 @@
     },
     "contextWindow": 262000,
     "maxTokens": 131072
-  },
-  {
-    "id": "Devstral-2-123B-Instruct-2512-int4-AutoRound",
-    "name": "Devstral 2 123B Instruct (int4 AutoRound)",
-    "reasoning": false,
-    "input": [
-      "text"
-    ],
-    "cost": {
-      "input": 0,
-      "output": 0,
-      "cacheRead": 0,
-      "cacheWrite": 0
-    },
-    "contextWindow": 128000,
-    "maxTokens": 128000
   },
   {
     "id": "gemma-4-31B-it-fp8",
@@ -157,22 +141,6 @@
       "cacheWrite": 0
     },
     "contextWindow": 262000,
-    "maxTokens": 131072
-  },
-  {
-    "id": "qwen38-flash-next",
-    "name": "Qwen3.8 Flash Next",
-    "reasoning": false,
-    "input": [
-      "text"
-    ],
-    "cost": {
-      "input": 0,
-      "output": 0,
-      "cacheRead": 0,
-      "cacheWrite": 0
-    },
-    "contextWindow": 262144,
     "maxTokens": 131072
   }
 ]
