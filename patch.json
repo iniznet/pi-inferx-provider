@@ -70,15 +70,26 @@
     }
   },
   "deepseek-v4.1-flash": {
-    "reasoning": false,
+    "reasoning": true,
     "input": [
       "text",
       "image"
     ],
+    "thinkingLevelMap": {
+      "off": "none",
+      "minimal": null,
+      "low": "low",
+      "medium": null,
+      "high": "high",
+      "xhigh": "xhigh",
+      "max": "max"
+    },
     "compat": {
+      "thinkingFormat": "openai",
       "maxTokensField": "max_tokens",
       "supportsDeveloperRole": false,
-      "supportsStore": false
+      "supportsStore": false,
+      "supportsReasoningEffort": true
     }
   },
   "deepseek-v4-flash-0731": {

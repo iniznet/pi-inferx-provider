@@ -135,6 +135,7 @@ const VLLM_EFFORTS = ["none", "minimal", "low", "medium", "high", "xhigh", "max"
 // vocabulary bounds that the global set alone cannot express.
 const VERIFIED_EFFORT: Record<string, string[]> = {
   "deepseek-v4-flash-0731": VLLM_EFFORTS,
+  "deepseek-v4.1-flash": ["none", "low", "high", "xhigh", "max"],
   "deepseek-v4-flash-vision-exp": VLLM_EFFORTS,
   "gemma-4-31B-it-fp8": ["none", "low", "medium", "high"],
   "glm-5.3-flash": VLLM_EFFORTS,
@@ -147,6 +148,9 @@ const VERIFIED_EFFORT: Record<string, string[]> = {
 // effort are hidden (null) to keep the selector at the endpoint's true granularity.
 const EXPECTED_EXPOSED: Record<string, string[]> = {
   "deepseek-v4-flash-0731": PI_LEVELS,
+  // minimal/medium are rejected by the endpoint's chat template; pi clamps a medium
+  // request up to high (models.ts clampThinkingLevel walks upward first).
+  "deepseek-v4.1-flash": ["off", "low", "high", "xhigh", "max"],
   "deepseek-v4-flash-vision-exp": PI_LEVELS,
   "gemma-4-31B-it-fp8": ["off", "low", "medium", "high"],
   "glm-5.3-flash": PI_LEVELS,
@@ -201,7 +205,7 @@ eq(
 );
 eq(
   built.filter((m: any) => m.reasoning).map((m: any) => m.id).sort(),
-  ["Qwen3.6-35B-A3B-FP8", "Qwen3.8-27B-FP8", "deepseek-v4-flash-0731", "gemma-4-31B-it-fp8", "glm-5.3-flash", ...shippedGraceIds.filter((id: string) => patchData[id]?.reasoning)].sort(),
+  ["Qwen3.6-35B-A3B-FP8", "Qwen3.8-27B-FP8", "deepseek-v4-flash-0731", "deepseek-v4.1-flash", "gemma-4-31B-it-fp8", "glm-5.3-flash", ...shippedGraceIds.filter((id: string) => patchData[id]?.reasoning)].sort(),
   "reasoning is declared exactly where a vLLM reasoning parser (or the same upstream weights) is evidenced",
 );
 eq(byId.get("gemma-4-31B-it-fp8")?.maxTokens, 16384, "gemma keeps the sibling-verified 16K completion cap instead of the generic ceiling");

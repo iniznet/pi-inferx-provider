@@ -14,9 +14,11 @@
  *   - `store` is not part of the vLLM request surface
  *   - Chat templates take the `system` role; `developer` is not universally mapped
  *   - Reasoning is enabled per endpoint by `--reasoning-parser <family>` and is controlled
- *     through `reasoning_effort`, whose accepted vocabulary is parser-owned
- *     (`none|low|medium|high`, plus `max` on some builds) — pi's own level names
- *     `minimal`/`xhigh` are not accepted, hence the explicit thinkingLevelMap entries
+ *     through `reasoning_effort`, whose accepted vocabulary is chat-template-owned and
+ *     differs per endpoint (verified by live probes against /endpoints/v1):
+ *     deepseek-v4.1-flash accepts none|low|high|xhigh|max (rejects minimal/medium), while
+ *     glm-5.3-flash and deepseek-v4-flash-0731 accept the full off..max vocabulary —
+ *     hence the explicit thinkingLevelMap entries in patch.json
  *   - `/endpoints/v1/models` is tenant-key-gated: it answers 401 without an `ix_` key, so
  *     the catalog cannot be refreshed anonymously (unlike the sibling providers this is
  *     modelled on). Without a key the embedded models.json is the catalog of record.
