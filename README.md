@@ -135,19 +135,21 @@ on top (the "Discount" column of the endpoint table). `models.json` stores the *
 rate — what your tenant actually pays — because that is the number pi's cost estimate must
 reflect. The list price is kept here as the audit trail:
 
-| Endpoint | List in / out / cache | Discount | Billed in / out / cache |
-|---|---|---|---|
 | `deepseek-v4-flash-0731` | 0.22 / 0.44 / 0.007 | 65% | **0.077 / 0.154 / 0.00245** |
-| `deepseek-v4-flash-vision-exp` | 0.22 / 0.66 / 0.007 | 40% | **0.132 / 0.396 / 0.0042** |
+| `deepseek-v4.1-flash` | 0.3 / 1.2 / 0.006 | 50% | **0.15 / 0.6 / 0.003** |
+| `deepseek-v4.1-flash-1017` | 0.3 / 1.2 / 0.006 | 50% | **0.15 / 0.6 / 0.003** |
+| `glm-5.3` | 1.4 / 4.4 / 0.28 | — | **1.4 / 4.4 / 0.28** |
 | `glm-5.3-flash` | 0.15 / 0.5 / 0.03 | 70% | **0.045 / 0.15 / 0.009** |
-| `qwen38-flash-next` | 0.15 / 0.47 / 0.016 | 100% | **Free** |
+| `qwen38-flash-next` | 0.15 / 0.47 / 0.016 | 100% | **Free** (deprecated, grace) |
 | `Agents-A1` | 0.12 / 0.9 / 0 | 80% | **0.024 / 0.18 / 0** |
-| `Devstral-2-123B-Instruct-2512-int4-AutoRound` | 0.35 / 1.8 / 0.035 | 100% | **Free** |
-| `gemma-4-31B-it-fp8` | 0.11 / 0.35 / 0.011 | 100% | **Free** |
-| `gpt-oss-20b` | 0.07 / 0.25 / 0.03 | 100% | **Free** |
-| `Qwen3-Coder-Next-FP8` | 0.18 / 0.9 / 0 | 100% | **Free** |
-| `Qwen3.6-35B-A3B-FP8` | 0.12 / 0.9 / 0.012 | 100% | **Free** |
-| `Qwen3.8-27B-FP8` | 0.45 / 3.2 / 0 | 96% | **0.018 / 0.128 / 0** |
+| `Devstral-2-123B-Instruct-2512-int4-AutoRound` | 0.35 / 1.8 / 0.035 | 90% | **0.035 / 0.18 / 0.0035** |
+| `gemma-4-31B-it-fp8` | 0.11 / 0.35 / 0.011 | 90% | **0.011 / 0.035 / 0.0011** |
+| `gpt-oss-20b` | 0.07 / 0.25 / 0.03 | 90% | **0.007 / 0.025 / 0.003** |
+| `kimi-k3` | 3 / 15 / 0.3 | — | **3 / 15 / 0.3** |
+| `qwen3.8-max` | 2 / 6 / 0.25 | — | **2 / 6 / 0.25** |
+| `Qwen3-Coder-Next-FP8` | 0.18 / 0.9 / 0 | 90% | **0.018 / 0.09 / 0** |
+| `Qwen3.6-35B-A3B-FP8` | 0.12 / 0.9 / 0.012 | 90% | **0.012 / 0.09 / 0.0012** |
+| `Qwen3.8-27B-FP8` | 0.45 / 3.2 / 0 | 90% | **0.045 / 0.32 / 0** |
 
 Discounts are tenant-specific and change over time. Re-run `npm run update-models` to
 refresh the catalog: prices are preserved curated data, so they only change when a source

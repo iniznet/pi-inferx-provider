@@ -111,14 +111,19 @@ section("B. shipped catalog integrity (models.json + patch.json)");
 
 const EXPECTED_IDS = [
   "Agents-A1",
+  "Devstral-2-123B-Instruct-2512-int4-AutoRound",
   "Qwen3-Coder-Next-FP8",
   "Qwen3.6-35B-A3B-FP8",
   "Qwen3.8-27B-FP8",
   "deepseek-v4-flash-0731",
   "deepseek-v4.1-flash",
+  "deepseek-v4.1-flash-1017",
   "gemma-4-31B-it-fp8",
+  "glm-5.3",
   "glm-5.3-flash",
   "gpt-oss-20b",
+  "kimi-k3",
+  "qwen3.8-max",
 ];
 // Delisted endpoints still inside the 14-day grace window stay registered. Read the
 // shipped graveyard dynamically so this gate survives its natural eviction instead of
@@ -137,9 +142,13 @@ const VLLM_EFFORTS = ["none", "minimal", "low", "medium", "high", "xhigh", "max"
 const VERIFIED_EFFORT: Record<string, string[]> = {
   "deepseek-v4-flash-0731": VLLM_EFFORTS,
   "deepseek-v4.1-flash": ["none", "low", "high", "xhigh", "max"],
+  "deepseek-v4.1-flash-1017": ["none", "low", "high", "xhigh", "max"],
   "deepseek-v4-flash-vision-exp": VLLM_EFFORTS,
   "gemma-4-31B-it-fp8": ["none", "low", "medium", "high"],
+  "glm-5.3": VLLM_EFFORTS,
   "glm-5.3-flash": VLLM_EFFORTS,
+  "kimi-k3": VLLM_EFFORTS,
+  "qwen3.8-max": VLLM_EFFORTS,
   "Qwen3.6-35B-A3B-FP8": ["none", "low", "medium", "high"],
   "Qwen3.8-27B-FP8": ["low", "medium"],
   "qwen38-flash-next": ["none", "low", "medium", "xhigh"],
@@ -152,9 +161,13 @@ const EXPECTED_EXPOSED: Record<string, string[]> = {
   // minimal/medium are rejected by the endpoint's chat template; pi clamps a medium
   // request up to high (models.ts clampThinkingLevel walks upward first).
   "deepseek-v4.1-flash": ["off", "low", "high", "xhigh", "max"],
+  "deepseek-v4.1-flash-1017": ["off", "low", "high", "xhigh", "max"],
   "deepseek-v4-flash-vision-exp": PI_LEVELS,
   "gemma-4-31B-it-fp8": ["off", "low", "medium", "high"],
+  "glm-5.3": PI_LEVELS,
   "glm-5.3-flash": PI_LEVELS,
+  "kimi-k3": PI_LEVELS,
+  "qwen3.8-max": PI_LEVELS,
   "Qwen3.6-35B-A3B-FP8": ["off", "low", "medium", "high"],
   "Qwen3.8-27B-FP8": ["low", "medium"],
   "qwen38-flash-next": ["off", "low", "medium", "xhigh"],
@@ -201,16 +214,16 @@ check(
 );
 eq(
   built.filter((m: any) => m.input.includes("image")).map((m: any) => m.id).sort(),
-  ["Qwen3.6-35B-A3B-FP8", "Qwen3.8-27B-FP8", "deepseek-v4.1-flash", "gemma-4-31B-it-fp8", "glm-5.3-flash", ...shippedGraceIds.filter((id: string) => patchData[id]?.input?.includes("image"))].sort(),
+  ["Qwen3.6-35B-A3B-FP8", "Qwen3.8-27B-FP8", "deepseek-v4.1-flash", "deepseek-v4.1-flash-1017", "gemma-4-31B-it-fp8", "glm-5.3-flash", "kimi-k3", ...shippedGraceIds.filter((id: string) => patchData[id]?.input?.includes("image"))].sort(),
   "vision is declared exactly where InferX evidence or a majority of sibling E2E catalogs points",
 );
 eq(
   built.filter((m: any) => m.reasoning).map((m: any) => m.id).sort(),
-  ["Qwen3.6-35B-A3B-FP8", "Qwen3.8-27B-FP8", "deepseek-v4-flash-0731", "deepseek-v4.1-flash", "gemma-4-31B-it-fp8", "glm-5.3-flash", ...shippedGraceIds.filter((id: string) => patchData[id]?.reasoning)].sort(),
+  ["Qwen3.6-35B-A3B-FP8", "Qwen3.8-27B-FP8", "deepseek-v4-flash-0731", "deepseek-v4.1-flash", "deepseek-v4.1-flash-1017", "gemma-4-31B-it-fp8", "glm-5.3", "glm-5.3-flash", "kimi-k3", "qwen3.8-max", ...shippedGraceIds.filter((id: string) => patchData[id]?.reasoning)].sort(),
   "reasoning is declared exactly where a vLLM reasoning parser (or the same upstream weights) is evidenced",
 );
 eq(byId.get("gemma-4-31B-it-fp8")?.maxTokens, 16384, "gemma keeps the sibling-verified 16K completion cap instead of the generic ceiling");
-eq(byId.get("deepseek-v4-flash-0731")?.contextWindow, 1000000, "the endpoint InferX publishes no length for carries the curated upstream window");
+eq(byId.get("deepseek-v4-flash-0731")?.contextWindow, 262144, "deepseek-v4-flash-0731 carries the catalog-published window (no longer unpublished)");
 
 // ─── C. Merge semantics ───────────────────────────────────────────────────────
 
