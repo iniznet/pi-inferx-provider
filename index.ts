@@ -294,19 +294,39 @@ export async function fetchLiveModels(apiKey: string | undefined, baseUrl: strin
   }
 }
 
-export function loadCachedModels(): JsonModel[] | null {
+/**
+ * Stamp identifying a shipped-catalog generation: a hash over every id's context window.
+ * The runtime cache records the stamp of the embedded catalog it was built from, so a
+ * cache written against an older models.json (e.g. one that merged a live listing with
+ * unpublished context lengths over pre-sync curation) is recognised as stale instead of
+ * masking a shipped catalog update.
+ */
+export function catalogStamp(models: JsonModel[]): string {
+  let h = 0x811c9dc5;
+  for (const line of models.map((m) => `${m.id}:${m.contextWindow}`).sort()) {
+    for (let i = 0; i < line.length; i++) {
+      h ^= line.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+  }
+  return `v1-${h.toString(16)}`;
+}
+
+export function loadCachedModels(): { stamp?: string; models: JsonModel[] } | null {
   try {
     const data = JSON.parse(fs.readFileSync(CACHE_PATH, "utf8"));
-    return Array.isArray(data) ? data : null;
+    if (Array.isArray(data)) return { models: data }; // legacy pre-stamp cache
+    if (data && Array.isArray(data.models)) return { stamp: data.stamp, models: data.models };
+    return null;
   } catch {
     return null;
   }
 }
 
-export function cacheModels(models: JsonModel[]): void {
+export function cacheModels(models: JsonModel[], stamp?: string): void {
   try {
     fs.mkdirSync(CACHE_DIR, { recursive: true });
-    fs.writeFileSync(CACHE_PATH, JSON.stringify(models, null, 2) + "\n");
+    fs.writeFileSync(CACHE_PATH, JSON.stringify(stamp ? { stamp, models } : models, null, 2) + "\n");
   } catch {
     // Cache write failure is non-fatal
   }
@@ -388,14 +408,19 @@ export function withDeprecated(
 
 export function loadStaleModels(embeddedModels: JsonModel[]): JsonModel[] {
   const cached = loadCachedModels();
-  if (!cached || cached.length === 0) return embeddedModels;
+  if (!cached || cached.models.length === 0) return embeddedModels;
+  // A cache written against a different shipped catalog is stale by definition: the
+  // session that wrote it may have merged a live listing (which reports no context
+  // lengths) over older curation, and reusing it would mask the shipped update.
+  if (cached.stamp !== catalogStamp(embeddedModels)) return embeddedModels;
 
   // Merge embedded models that are missing from cache (newly added models)
-  const cachedMap = new Map(cached.map((m) => [m.id, m]));
+  const models = cached.models;
+  const cachedMap = new Map(models.map((m) => [m.id, m]));
   for (const em of embeddedModels) {
-    if (!cachedMap.has(em.id)) cached.push(em);
+    if (!cachedMap.has(em.id)) models.push(em);
   }
-  return cached;
+  return models;
 }
 
 export async function revalidateModels(
@@ -408,7 +433,7 @@ export async function revalidateModels(
   const liveModels = await fetchLiveModels(apiKey, baseUrl, signal);
   if (!liveModels || liveModels.length === 0) return null;
   const merged = mergeWithEmbedded(liveModels, embeddedModels);
-  cacheModels(merged);
+  cacheModels(merged, catalogStamp(embeddedModels));
   return merged;
 }
 

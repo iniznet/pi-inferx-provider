@@ -42,6 +42,7 @@ const {
   buildModels,
   sanitizeModels,
   mergeWithEmbedded,
+  loadStaleModels,
   selectActiveDeprecated,
   withDeprecated,
   transformApiModel,
@@ -335,6 +336,21 @@ eq(swapped.length, EXPECTED_REGISTERED_IDS.length + 1, "a new endpoint from the 
 const glm = swapped.find((m: any) => m.id === "glm-5.3-flash");
 eq([glm.cost.input, glm.name, glm.reasoning], [0.02, "GLM 5.3 Flash", true], "live pricing is adopted while curated identity and capability survive");
 check(fs.existsSync(path.join(tmpHome, "cache", "inferx-models.json")), "the refreshed catalog is cached under the isolated agent dir");
+const cachedFile = JSON.parse(fs.readFileSync(path.join(tmpHome, "cache", "inferx-models.json"), "utf8"));
+eq(cachedFile.stamp, index.catalogStamp(modelsData), "the cache records the stamp of the embedded catalog it was built from");
+
+// A cache from a different shipped-catalog generation must not mask the shipped update:
+// this is exactly how a live-merged pre-sync cache served a new endpoint with context 0
+// (which sanitize then clamps to the 131072 fallback instead of the published length).
+const cachePath = path.join(tmpHome, "cache", "inferx-models.json");
+const goodModels = [{ id: "cached-model", name: "C", reasoning: false, input: ["text"], cost: { input: 1, output: 1, cacheRead: 0, cacheWrite: 0 }, contextWindow: 1000, maxTokens: 100 }];
+fs.writeFileSync(cachePath, JSON.stringify({ stamp: "v1-stale", models: goodModels }));
+eq(loadStaleModels(modelsData), modelsData, "a cache stamped against a different shipped catalog is discarded");
+fs.writeFileSync(cachePath, JSON.stringify(goodModels));
+eq(loadStaleModels(modelsData), modelsData, "a legacy pre-stamp array cache is discarded");
+fs.writeFileSync(cachePath, JSON.stringify({ stamp: index.catalogStamp(modelsData), models: goodModels }));
+eq(loadStaleModels(modelsData).map((m: any) => m.id), ["cached-model", ...modelsData.map((m: any) => m.id)], "a matching-stamp cache is used and embedded-only ids are appended");
+fs.rmSync(cachePath);
 
 // A keyless session must leave the stale catalog alone (InferX answers 401 without a key).
 const before = registered.length;
